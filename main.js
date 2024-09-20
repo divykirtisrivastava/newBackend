@@ -9,13 +9,16 @@ const subcategoryRoute= require('./routes/subCategory.js')
 const cartRoute = require('./routes/cartRoute.js')
 const paymentRoute= require('./routes/paymentRoute.js')
 const orderRoute= require('./routes/orderRoute.js')
+const adminRoute= require('./routes/adminRoute.js')
+const path = require('path');
 
 
 
 let app = express()
 app.use(express.json())
 app.use(cors())
-app.use(express.static('uploads'))
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 db.connect((err)=>{
 if(err) throw err
 else{
@@ -86,6 +89,19 @@ db.query(categoryTableQuery, (err, result)=>{
         console.log("category table created successfull")
     }
 })
+let adminTableQuery=`
+CREATE TABLE IF NOT EXISTS admin_table(
+id INT NOT NULL AUTO_INCREMENT,
+email VARCHAR(255) NULL,
+password VARCHAR(255) NULL,
+PRIMARY KEY (id));
+`
+db.query(adminTableQuery, (err, result)=>{
+    if(err) throw err
+    else{
+        console.log("category table created successfull")
+    }
+})
 
 let subcategoryTableQuery=`
 CREATE TABLE IF NOT EXISTS subcategory_table(
@@ -141,6 +157,7 @@ app.use('/shop',subcategoryRoute)
 app.use('/shop',cartRoute)
 app.use('/shop', paymentRoute)
 app.use('/shop', orderRoute)
+app.use('/shop', adminRoute)
 
 app.listen(4000,()=>{
     console.log(`server is running on ${process.env.PORT}`)
