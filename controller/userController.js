@@ -56,7 +56,7 @@ exports.clientLogin = (req, res)=>{
 }
 
 function createUserWishListtable(tname){
-    let userwishlistTableQuery = `CREATE TABLE IF NOT EXISTS \`${tname}_wish\` (
+    let userwishlistTableQuery = `CREATE TABLE IF NOT EXISTS \`${tname}_simran_wish\` (
     id INT NOT NULL AUTO_INCREMENT,
     productTitle VARCHAR(255) NULL,
     productName VARCHAR(255) NULL,
@@ -82,7 +82,7 @@ function createUserWishListtable(tname){
       });
 }
 function createUserCartListtable(tname){
-    let userwishlistTableQuery = `CREATE TABLE IF NOT EXISTS \`${tname}_cart\` (
+    let userwishlistTableQuery = `CREATE TABLE IF NOT EXISTS \`${tname}_simran_cart\` (
     id INT NOT NULL AUTO_INCREMENT,
     productTitle VARCHAR(255) NULL,
     productName VARCHAR(255) NULL,
