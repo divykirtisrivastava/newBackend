@@ -3,10 +3,10 @@ const router=express.Router()
 const userController = require('../controller/userController.js')
 
 
-router.post('/userSave',userController.userSave)
-router.get('/getUser', userController.getUser)
-router.delete('/deleteUser/:id', userController.deleteUser)
-router.get('/viewUser/:id',userController.viewUser)
-router.put('/updateUser/:id', userController.updateUser)
+router.post('/userSave',userController.clientSave)
+router.post('/userlogin', userController.clientLogin)
+router.post('/userverify', userController.verify)
+router.get('/userGet', userController.usersGet)
+
 
 module.exports=router

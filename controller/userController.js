@@ -1,64 +1,139 @@
-const db= require('../databaseConfig.js')
- 
-exports.userSave=(req,res)=>{
-    let userName = req.body.userName
-    let userNumber = req.body.userNumber
-    let userAddress= req.body.userAddress
-    let userCity= req.body.userCity
-    let userPincode= req.body.userPincode
-    let userState= req.body.userState
-   
+let db  = require('../databaseConfig.js')
+const path = require('path');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
-    let value=[[userName,userNumber,userAddress,userCity,userPincode,userState]]
-    let sql=`insert into user_table(userName,userNumber,userAddress,userCity,userPincode,userState) values ?`
-    db.query(sql,[value],(err,result)=>{
+ function generateToken(user) {
+    return  jwt.sign({id: user.id}, "hii", {expiresIn: '1d'})
+}
+
+exports.clientSave = async (req, res)=>{
+
+    let name = req.body.name
+    let email = req.body.email
+    let password = req.body.password
+    let hash = await bcrypt.hash(password, 10)
+
+    let value = [[name,email, hash]]
+
+    let sql  = 'insert into clientlist(name,email, password) values ?'
+
+    db.query(sql, [value], (err, result)=>{
         if(err) throw err
         else{
-            res.send("User details submitted")
+            res.send("clientlist saved")
         }
     })
 }
 
-exports.getUser = (req, res)=>{
-    let sql = 'select * from user_table'
-    db.query(sql, (err, result)=>{
+exports.clientLogin = (req, res)=>{
+    let email = req.body.email
+    let password = req.body.password
+    db.query('select * from clientlist where email = ?', [email], async (err, result)=>{
+        if(err){}
+        else{
+          if(result.length> 0){
+            await  bcrypt.compare(password, result[0].password, async (err, isMatch)=>{
+                if(err) throw err
+                else{
+                    if(isMatch){
+                        let token = await generateToken(result[0])
+                        let tname = result[0].email.split('@')[0]
+                        createUserWishListtable(tname)
+                        createUserCartListtable(tname)
+                        res.json({token, tname, isMatch, result})
+                    }
+                    else{
+                        res.json({isMatch})
+                    }
+                }
+            })
+          }else{
+            res.json({isMach:false})
+          }
+        }
+    })
+}
+
+function createUserWishListtable(tname){
+    let userwishlistTableQuery = `CREATE TABLE IF NOT EXISTS \`${tname}_wish\` (
+    id INT NOT NULL AUTO_INCREMENT,
+    productTitle VARCHAR(255) NULL,
+    productName VARCHAR(255) NULL,
+    productRating INT NULL,
+    productDetail TEXT NULL,
+    productCategory VARCHAR(255) NULL,
+    productSubCategory VARCHAR(255) NULL,
+    productPrice INT NULL, 
+    productDiscount INT NULL,
+    productCode VARCHAR(255) NULL,
+    productSize VARCHAR(255) NULL, 
+    productImages TEXT NULL, 
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id)  -- Add this line to make the id the primary key
+);`
+      
+      db.query(userwishlistTableQuery, (err, result) => {
+        if (err) throw err;
+        else {
+          console.log("userwishlist table created");
+        }
+      });
+}
+function createUserCartListtable(tname){
+    let userwishlistTableQuery = `CREATE TABLE IF NOT EXISTS \`${tname}_cart\` (
+    id INT NOT NULL AUTO_INCREMENT,
+    productTitle VARCHAR(255) NULL,
+    productName VARCHAR(255) NULL,
+    productRating INT NULL,
+    productDetail TEXT NULL,
+    productCategory VARCHAR(255) NULL,
+    productSubCategory VARCHAR(255) NULL,
+    productPrice INT NULL, 
+    productDiscount INT NULL,
+    productCode VARCHAR(255) NULL,
+    productSize VARCHAR(255) NULL, 
+    productImages TEXT NULL, 
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id)  -- Add this line to make the id the primary key
+);`
+      
+      db.query(userwishlistTableQuery, (err, result) => {
+        if (err) throw err;
+        else {
+          console.log("userwishlist table created");
+        }
+      });
+}
+
+exports.verify =async (req, res)=>{
+    let token = req.headers['authorization'].split(" ")[1]
+    // console.log("client token:- "+token)
+    if(token){
+      await  jwt.verify(token, "hii", (err, decode)=>{
+            if(err) throw err
+            else{
+                db.query("select * from clientlist where id = ?", [decode.id], (err, result)=>{
+                    if(err) throw err
+                    else{
+                        res.json(result[0])
+                    }
+                })
+            }
+        })
+    }else{
+        res.send("token not get")
+    }
+}
+
+exports.usersGet=(req,res)=>{
+    let sql=`select * from clientlist`
+    db.query(sql,(err,result)=>{
         if(err) throw err
         else{
             res.json(result)
-        }
-    })
-}
-exports.deleteUser = (req, res)=>{
-    let id = req.params.id
-    let sql = 'delete from user_table where id = ?'
-
-    db.query(sql, [id], (err, result)=>{
-        if(err) throw err
-        else{
-            res.send('user data deleted')
-        }
-    })
-}
-
-exports.viewUser = (req,res)=>{
-    let id = req.params.id
-    let sql = "select * from user_table where id = ?"
-    db.query(sql, [id], (err, result)=>{
-        if(err) throw err
-        else{
-            res.json(result)
-        }
-    })
-}
-
-exports.updateUser = (req, res)=>{
-    let id = req.params.id
-    let newData = req.body
-    let sql = 'update user_table set  ? where id = ?'
-    db.query(sql, [newData, id], (err, result)=>{
-        if(err) throw err
-        else{
-            res.send('user data updated')
         }
     })
 }

@@ -1,24 +1,25 @@
 const db= require('../databaseConfig.js')
 
 exports.cartSave=(req,res)=>{
-    let cartName = req.body.cartName
-    let cartCategory = req.body.cartCategory
-    let cartImage= req.file.filename
-   
-   
+    let user = req.params.user
+    const { productTitle, productName, productRating, productDetail, productCategory, productSubCategory, productPrice, productDiscount, productCode, productSize, productImages } = req.body;
 
-    let value=[[cartName,cartCategory,cartImage]]
-    let sql=`insert into cart_table(cartName,cartCategory,cartImage) values ?`
-    db.query(sql,[value],(err,result)=>{
-        if(err) throw err
-        else{
-            res.send("cart details submitted")
-        }
-    })
+    // Insert product into the database
+    const sql = `INSERT INTO ${user} (productTitle, productName, productRating, productDetail, productCategory, productSubCategory, productPrice, productDiscount, productCode, productSize, productImages)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+  
+    db.query(sql, [productTitle, productName, productRating, productDetail, productCategory, productSubCategory, productPrice, productDiscount, productCode, productSize, productImages], (err, result) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ message: 'Database insertion error' });
+      }
+      res.status(200).json({ message: 'Product added successfully', productId: result.insertId });
+    });
 }
 
 exports.getCart = (req, res)=>{
-    let sql = 'select * from cart_table'
+    let user = req.params.user
+    let sql = `select * from ${user}`
     db.query(sql, (err, result)=>{
         if(err) throw err
         else{
@@ -29,7 +30,8 @@ exports.getCart = (req, res)=>{
 
 exports.deleteCart = (req, res)=>{
     let id = req.params.id
-    let sql = 'delete from cart_table where id = ?'
+    let user = req.params.user
+    let sql = `delete from ${user} where id = ?`
 
     db.query(sql, [id], (err, result)=>{
         if(err) throw err

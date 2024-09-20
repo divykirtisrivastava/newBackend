@@ -25,17 +25,17 @@ exports.categoryGet=(req,res)=>{
         }
     })
 }
-exports.categoryUpdate=(req,res)=>{
-    let id = req.params.id
-    let newData= req.body
-    let sql=`update category_table set ? where id = ?`
-    db.query(sql,[newData, id],(err,result)=>{
-        if(err) throw err
-        else{
-            res.json("data updaetd")
-        }
-    })
-}
+// exports.categoryUpdate=(req,res)=>{
+//     let id = req.params.id
+//     let newData= req.body
+//     let sql=`update category_table set ? where id = ?`
+//     db.query(sql,[newData, id],(err,result)=>{
+//         if(err) throw err
+//         else{
+//             res.json("data updaetd")
+//         }
+//     })
+// }
 exports.categoryDelete=(req,res)=>{
     let id = req.params.id
     let sql=`delete from category_table where id = ?`
